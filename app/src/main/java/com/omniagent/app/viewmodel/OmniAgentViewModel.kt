@@ -11,6 +11,8 @@ import com.omniagent.app.security.CryptoManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModelProvider
+import android.content.Context
+import android.content.SharedPreferences
 
 /**
  * Main ViewModel — manages all UI state and orchestrates the analysis pipeline.
@@ -24,6 +26,11 @@ class OmniAgentViewModel(
     // Auto-lock inactivity timer (5 minutes)
     private val INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
     private var inactivityJob: kotlinx.coroutines.Job? = null
+    
+    // Persistent State Handle
+    private val sharedPrefs: SharedPreferences = application.getSharedPreferences(
+        "omniagent_prefs", Context.MODE_PRIVATE
+    )
 
     // === UI STATE ===
 
@@ -44,6 +51,10 @@ class OmniAgentViewModel(
 
     val recentLogs = repository.getRecentLogs(50)
 
+    init {
+        restorePendingAnalysisState()
+    }
+
     // === ACTIONS ===
 
     /**
@@ -52,6 +63,9 @@ class OmniAgentViewModel(
     fun analyzeInput(userInput: String) {
         if (userInput.isBlank()) return
         resetInactivityTimer()
+
+        // Save state persistently in case process dies
+        savePendingAnalysisState(userInput)
 
         viewModelScope.launch {
             _uiState.update { it.copy(isProcessing = true, error = null, activeTab = DashboardTab.OUTPUT) }
@@ -82,6 +96,8 @@ class OmniAgentViewModel(
                         error = "Analysis failed: ${e.message}"
                     )
                 }
+            } finally {
+                clearPendingAnalysisState()
             }
         }
     }
@@ -161,6 +177,23 @@ class OmniAgentViewModel(
                 switchToUserRole()
                 _uiState.update { it.copy(error = "Session auto-locked due to inactivity.") }
             }
+        }
+    }
+
+    // === PERSISTENCE LOGIC ===
+    private fun savePendingAnalysisState(input: String) {
+        sharedPrefs.edit().putString("pending_analysis_input", input).apply()
+    }
+
+    private fun clearPendingAnalysisState() {
+        sharedPrefs.edit().remove("pending_analysis_input").apply()
+    }
+
+    private fun restorePendingAnalysisState() {
+        val pendingInput = sharedPrefs.getString("pending_analysis_input", null)
+        if (!pendingInput.isNullOrBlank()) {
+            _uiState.update { it.copy(error = "Resuming incomplete background analysis...") }
+            analyzeInput(pendingInput)
         }
     }
 }
