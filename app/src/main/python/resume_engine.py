@@ -101,32 +101,33 @@ class ResumeEngine:
         # Skill gap analysis
         skill_gaps = self._skill_gap_analysis(found_tech)
 
-        report = {
-            "engine": "Resume ATS Scoring Engine",
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "status": "success",
-            "ats_score": ats_score,
-            "score_grade": self._score_grade(ats_score),
-            "sections_detected": sections,
-            "skills": {
-                "technical": found_tech,
-                "soft_skills": found_soft,
-                "total_tech_skills": sum(len(v) for v in found_tech.values()),
-                "total_soft_skills": len(found_soft)
+        # Standardized Output Fields
+        final_report = {
+            "module_name": "Resume ATS Scoring Engine",
+            "confidence_score": 1.0,
+            "reasoning": [
+                "Detected standard resume sections: {}".format(", ".join([k for k, v in sections.items() if v])),
+                "Extracted {} technical skills and {} soft skills".format(len(found_tech), len(found_soft)),
+                "ATS keyword match density: {}%".format(ats_analysis["match_percentage"])
+            ],
+            "structured_analysis": {
+                "ats_score": ats_score,
+                "score_grade": self._score_grade(ats_score),
+                "skills": {
+                    "technical": found_tech,
+                    "soft": found_soft
+                },
+                "keyword_analysis": ats_analysis,
+                "recommendations": self._generate_recommendations(
+                    sections, found_tech, found_soft, ats_analysis,
+                    action_analysis, format_analysis, ats_score
+                )
             },
-            "ats_keywords": ats_analysis,
-            "action_verbs": action_analysis,
-            "format_analysis": format_analysis,
-            "skill_gaps": skill_gaps,
-            "recommendations": self._generate_recommendations(
-                sections, found_tech, found_soft, ats_analysis,
-                action_analysis, format_analysis, ats_score
-            ),
-            "word_count": len(resume_text.split()),
-            "log": self.analysis_log
+            "risk_score": float(100 - ats_score),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        return json.dumps(report, indent=2)
+        return json.dumps(final_report, indent=2)
 
     def _detect_sections(self, text):
         """Detect standard resume sections."""

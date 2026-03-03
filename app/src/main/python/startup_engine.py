@@ -121,23 +121,31 @@ class StartupEngine:
         # Extract key elements from the idea
         elements = self._extract_idea_elements(text_lower)
 
-        report = {
-            "engine": "Startup Feasibility Engine",
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "status": "success",
-            "idea_summary": idea_text[:200],
-            "market_analysis": market,
-            "swot_analysis": swot,
-            "revenue_models": revenue,
-            "feasibility_score": feasibility,
-            "key_elements": elements,
-            "go_no_go": self._go_no_go_recommendation(feasibility["total_score"]),
-            "next_steps": self._generate_next_steps(feasibility["total_score"], market),
-            "recommendations": self._generate_recommendations(market, swot, revenue, feasibility),
-            "log": self.analysis_log
+        # Standardized Output Fields
+        final_report = {
+            "module_name": "Startup Feasibility Engine",
+            "confidence_score": 1.0,
+            "reasoning": [
+                "Identified primary market: {}".format(market.get("primary_market", "general")),
+                "Computed feasibility score: {}/100 ({})".format(feasibility["total_score"], feasibility["grade"]),
+                "Decided '{}' based on market readiness and vision clarity".format(
+                    self._go_no_go_recommendation(feasibility["total_score"])["decision"]
+                )
+            ],
+            "structured_analysis": {
+                "market": market,
+                "swot": swot,
+                "revenue_models": [r for r in revenue if r["relevance"] != "low"][:3],
+                "feasibility": feasibility,
+                "go_no_go": self._go_no_go_recommendation(feasibility["total_score"]),
+                "next_steps": self._generate_next_steps(feasibility["total_score"], market),
+                "recommendations": self._generate_recommendations(market, swot, revenue, feasibility)
+            },
+            "risk_score": float(100 - feasibility["total_score"]),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        return json.dumps(report, indent=2)
+        return json.dumps(final_report, indent=2)
 
     def _detect_market(self, text_lower):
         """Identify the most relevant market category."""
