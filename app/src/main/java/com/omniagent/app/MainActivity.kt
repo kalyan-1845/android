@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.omniagent.app.ui.features.dashboard.DashboardScreen
+import com.omniagent.app.ui.features.splash.SplashScreen
 import com.omniagent.app.core.theme.OmniAgentTheme
 import com.omniagent.app.viewmodel.OmniAgentViewModel
 import com.omniagent.app.viewmodel.OmniAgentViewModelFactory
@@ -27,8 +28,15 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             OmniAgentTheme {
-                // Get DI container from Application
-                val appContainer = (applicationContext as OmniAgentApplication).container
+                var showSplash by remember { mutableStateOf(true) }
+
+                if (showSplash) {
+                    SplashScreen(
+                        onSplashFinished = { showSplash = false }
+                    )
+                } else {
+                    // Get DI container from Application
+                    val appContainer = (applicationContext as OmniAgentApplication).container
                 
                 // Inject repository into ViewModel via factory
                 val viewModel: OmniAgentViewModel = viewModel(
