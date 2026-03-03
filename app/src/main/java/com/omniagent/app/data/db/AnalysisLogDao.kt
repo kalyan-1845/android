@@ -18,6 +18,10 @@ interface AnalysisLogDao {
     @Query("SELECT * FROM analysis_logs WHERE classifiedModule = :module ORDER BY timestamp DESC")
     fun getLogsByModule(module: String): Flow<List<AnalysisLog>>
 
+    // Search history feature
+    @Query("SELECT * FROM analysis_logs WHERE userInput LIKE '%' || :query || '%' OR classifiedModule LIKE '%' || :query || '%' ORDER BY timestamp DESC")
+    fun searchLogs(query: String): Flow<List<AnalysisLog>>
+
     @Query("SELECT * FROM analysis_logs WHERE id = :id")
     suspend fun getLogById(id: Long): AnalysisLog?
 

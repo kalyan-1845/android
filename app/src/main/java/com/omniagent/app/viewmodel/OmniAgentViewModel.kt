@@ -19,6 +19,10 @@ class OmniAgentViewModel(application: Application) : AndroidViewModel(applicatio
     private val database = OmniAgentDatabase.getDatabase(application)
     private val repository = OmniAgentRepository(database.analysisLogDao())
 
+    // Auto-lock inactivity timer (5 minutes)
+    private val INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
+    private var inactivityJob: kotlinx.coroutines.Job? = null
+
     // === UI STATE ===
 
     private val _uiState = MutableStateFlow(OmniAgentUiState())
@@ -45,6 +49,7 @@ class OmniAgentViewModel(application: Application) : AndroidViewModel(applicatio
      */
     fun analyzeInput(userInput: String) {
         if (userInput.isBlank()) return
+        resetInactivityTimer()
 
         viewModelScope.launch {
             _uiState.update { it.copy(isProcessing = true, error = null, activeTab = DashboardTab.OUTPUT) }
@@ -83,6 +88,7 @@ class OmniAgentViewModel(application: Application) : AndroidViewModel(applicatio
      * Switch active dashboard tab.
      */
     fun switchTab(tab: DashboardTab) {
+        resetInactivityTimer()
         _uiState.update { it.copy(activeTab = tab) }
     }
 
@@ -139,6 +145,20 @@ class OmniAgentViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun dismissError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    /**
+     * Resets the inactivity timer. If it expires, user is logged out of Admin mode.
+     */
+    private fun resetInactivityTimer() {
+        inactivityJob?.cancel()
+        if (_uiState.value.currentRole == UserRole.ADMIN) {
+            inactivityJob = viewModelScope.launch {
+                kotlinx.coroutines.delay(INACTIVITY_TIMEOUT_MS)
+                switchToUserRole()
+                _uiState.update { it.copy(error = "Session auto-locked due to inactivity.") }
+            }
+        }
     }
 }
 

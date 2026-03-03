@@ -12,6 +12,9 @@ object FileSandbox {
     private const val UPLOADS_DIR = "uploads"
     private const val MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5MB max
     private const val MAX_INPUT_LENGTH = 50_000 // 50K characters max
+    
+    // File type whitelist validation
+    private val ALLOWED_EXTENSIONS = setOf("txt", "json", "log", "csv", "md", "xml", "py", "kt", "js", "html", "css")
 
     private lateinit var sandboxRoot: File
 
@@ -34,8 +37,17 @@ object FileSandbox {
     fun isPathSafe(path: String): Boolean {
         if (path.contains("..") || path.contains("~")) return false
 
-        val resolvedPath = File(sandboxRoot, path).canonicalPath
-        return resolvedPath.startsWith(sandboxRoot.canonicalPath)
+        val file = File(sandboxRoot, path)
+        val resolvedPath = file.canonicalPath
+        return resolvedPath.startsWith(sandboxRoot.canonicalPath) && hasValidExtension(path)
+    }
+
+    /**
+     * Validate against strict whitelist of file types.
+     */
+    fun hasValidExtension(fileName: String): Boolean {
+        val ext = fileName.substringAfterLast('.', "").lowercase()
+        return ext in ALLOWED_EXTENSIONS || fileName.indexOf('.') == -1 // allow extensionless like "README"
     }
 
     /**

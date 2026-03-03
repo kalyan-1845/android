@@ -124,6 +124,8 @@ class OmniAgentRepository(
 
     fun getLogsByModule(module: String): Flow<List<AnalysisLog>> = analysisLogDao.getLogsByModule(module)
 
+    fun searchLogs(query: String): Flow<List<AnalysisLog>> = analysisLogDao.searchLogs(query)
+
     suspend fun clearAllLogs() = analysisLogDao.clearAllLogs()
 
     suspend fun getLogCount(): Int = analysisLogDao.getLogCount()
