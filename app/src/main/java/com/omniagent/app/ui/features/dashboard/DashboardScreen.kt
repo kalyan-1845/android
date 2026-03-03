@@ -23,13 +23,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.omniagent.app.data.model.*
-import com.omniagent.app.ui.components.*
+import com.omniagent.app.core.model.*
+import com.omniagent.app.ui.common.*
+import com.omniagent.app.ui.features.growth.SkillGrowthScreen
+import com.omniagent.app.ui.features.export.PdfReportExporter
 import com.omniagent.app.ui.theme.OmniColors
 import com.omniagent.app.viewmodel.DashboardTab
 import com.omniagent.app.viewmodel.OmniAgentUiState
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Main Dashboard Screen — The OS-style control center.
@@ -127,19 +130,21 @@ fun DashboardScreen(
                     classificationResult = classificationResult,
                     engineResult = engineResult,
                     uiState = uiState,
-                    onClearResults = onClearResults
+                    onClearResults = onClearResults,
+                    onDecryptLog = onDecryptLog
                 )
                 1 -> ReasoningTab(
                     reasoningSteps = reasoningSteps,
                     classificationResult = classificationResult
                 )
-                2 -> LogsTab(
+                2 -> SkillGrowthScreen(logs = logs)
+                3 -> LogsTab(
                     logs = logs,
                     onClearLogs = onClearLogs,
                     onDecryptLog = onDecryptLog,
                     isAdmin = uiState.currentRole == UserRole.ADMIN
                 )
-                3 -> SettingsTab(
+                4 -> SettingsTab(
                     uiState = uiState,
                     onAuthenticateAdmin = onAuthenticateAdmin,
                     onSwitchToUser = onSwitchToUser
@@ -238,8 +243,10 @@ private fun OutputTab(
     classificationResult: ClassificationResult?,
     engineResult: EngineResult?,
     uiState: OmniAgentUiState,
+    onDecryptLog: (String) -> String,
     onClearResults: () -> Unit
 ) {
+    val context = LocalContext.current
     if (!uiState.hasResult || classificationResult == null) {
         // Empty state
         Box(
@@ -300,6 +307,28 @@ private fun OutputTab(
                         color = OmniColors.getModuleColor(entry.module)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+
+        // PDF Export Button
+        item {
+            AnimatedVisibility(visible = engineResult != null) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    ExportButton(
+                        onClick = {
+                            val log = AnalysisLog(
+                                userInput = "Exported Result",
+                                classifiedModule = classificationResult.module ?: "none",
+                                confidence = classificationResult.confidence,
+                                confidenceLevel = classificationResult.confidenceLevel,
+                                resultJson = engineResult?.rawJson ?: "",
+                                reasoningJson = Gson().toJson(classificationResult.reasoning)
+                            )
+                            PdfReportExporter.exportReport(context, log, engineResult?.rawJson ?: "No result data")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }
