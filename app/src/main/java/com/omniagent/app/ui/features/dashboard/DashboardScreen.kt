@@ -57,7 +57,7 @@ fun DashboardScreen(
     modifier: Modifier = Modifier
 ) {
     var inputText by remember { mutableStateOf("") }
-    var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedTab by remember { mutableStateOf(0) }
 
     Column(
         modifier = modifier

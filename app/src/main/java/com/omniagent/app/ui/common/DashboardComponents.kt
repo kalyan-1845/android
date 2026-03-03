@@ -294,7 +294,7 @@ fun DashboardCard(
             headerAction?.invoke()
         }
 
-        Divider(color = OmniColors.Border, thickness = 0.5.dp)
+        HorizontalDivider(color = OmniColors.Border, thickness = 0.5.dp)
 
         // Content
         Column(
@@ -396,7 +396,7 @@ fun ScoreBar(
         }
         Spacer(modifier = Modifier.height(4.dp))
         LinearProgressIndicator(
-            progress = { score / maxScore },
+            progress = (score / maxScore).coerceIn(0f, 1f),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(4.dp)

@@ -39,7 +39,7 @@ fun AdminDashboardScreen(
         return
     }
 
-    var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Analytics", "Audit Logs", "System Diagnostics")
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -110,7 +110,7 @@ fun AdminAnalyticsTab(logs: List<AnalysisLog>) {
                 Text(module, fontWeight = FontWeight.SemiBold)
                 Text("$count executions")
             }
-            Divider()
+            HorizontalDivider()
         }
     }
 }
