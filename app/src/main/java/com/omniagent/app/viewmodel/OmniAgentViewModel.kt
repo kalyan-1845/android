@@ -120,6 +120,7 @@ class OmniAgentViewModel(application: Application) : AndroidViewModel(applicatio
         val success = AccessControl.authenticateAdmin(pin)
         if (success) {
             _uiState.update { it.copy(currentRole = UserRole.ADMIN) }
+            resetInactivityTimer()
         }
         return success
     }
