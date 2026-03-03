@@ -31,6 +31,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.omniagent.app.ui.theme.OmniColors
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 
 /**
  * Command Input Panel — The primary user input component.
@@ -417,6 +419,7 @@ fun DashboardTabBar(
     val tabs = listOf(
         "Output" to Icons.Default.Dashboard,
         "Reasoning" to Icons.Default.Psychology,
+        "Growth" to Icons.Default.TrendingUp,
         "Logs" to Icons.Default.History,
         "Settings" to Icons.Default.Settings
     )
@@ -438,7 +441,7 @@ fun DashboardTabBar(
             Column(
                 modifier = Modifier
                     .clickable { onTabSelected(index) }
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
@@ -471,5 +474,79 @@ fun DashboardTabBar(
                 }
             }
         }
+    }
+}
+
+/**
+ * Demo Presentation Bar — One-click trigger for hackathon judging.
+ */
+@Composable
+fun DemoPresentationBar(
+    onDemoClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val demos = listOf(
+        "Coding" to "coding",
+        "Cybersec" to "cyber",
+        "Resume" to "resume",
+        "Startup" to "startup"
+    )
+
+    Column(modifier = modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = "DEMO PRESENTATION FLOW",
+            style = MaterialTheme.typography.labelSmall,
+            color = OmniColors.Accent,
+            modifier = Modifier.padding(horizontal = 16.dp, bottom = 8.dp)
+        )
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(demos) { (label, type) ->
+                Button(
+                    onClick = { onDemoClick(type) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = OmniColors.SurfaceBright,
+                        contentColor = OmniColors.TextPrimary
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                ) {
+                    Icon(
+                        Icons.Default.PlayCircleOutline,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = OmniColors.Primary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(label, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Branded Export Button for Reports.
+ */
+@Composable
+fun ExportButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = OmniColors.Secondary
+        ),
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
+    ) {
+        Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(18.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Export AI Report", fontWeight = FontWeight.Bold)
     }
 }

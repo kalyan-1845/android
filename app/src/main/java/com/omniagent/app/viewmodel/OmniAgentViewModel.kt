@@ -166,6 +166,25 @@ class OmniAgentViewModel(
         _uiState.update { it.copy(error = null) }
     }
 
+    // === DEMO MODE & PRESENTATION ===
+
+    fun toggleDemoMode(enabled: Boolean) {
+        _uiState.update { it.copy(isDemoMode = enabled) }
+    }
+
+    fun runDemo(type: String) {
+        val input = when(type) {
+            "coding" -> "Check this Python code for SQL injection vulnerabilities: cursor.execute('SELECT * FROM users WHERE name = ' + user_input)"
+            "cyber" -> "Analyze these logs for suspicious patterns: 192.168.1.1 accessed /admin/config 50 times in 2 seconds"
+            "resume" -> "Review this resume snippet: Senior Java Developer with 10 years experience in banking systems and microservices."
+            "startup" -> "Evaluate my startup idea: An AI-powered personal chef app that suggests recipes based on fridge contents and nutrition goals."
+            else -> ""
+        }
+        if (input.isNotEmpty()) {
+            analyzeInput(input)
+        }
+    }
+
     /**
      * Resets the inactivity timer. If it expires, user is logged out of Admin mode.
      */
@@ -226,7 +245,8 @@ data class OmniAgentUiState(
     val lastModuleName: String = "",
     val lastConfidence: Double = 0.0,
     val processingTimeMs: Long = 0,
-    val currentRole: UserRole = UserRole.USER
+    val currentRole: UserRole = UserRole.USER,
+    val isDemoMode: Boolean = false
 )
 
 /**
@@ -235,6 +255,7 @@ data class OmniAgentUiState(
 enum class DashboardTab(val title: String, val icon: String) {
     OUTPUT("Output", "workspace"),
     REASONING("Reasoning", "brain"),
+    GROWTH("Growth", "trending_up"),
     LOGS("Logs", "history"),
     SETTINGS("Settings", "settings")
 }
