@@ -1,4 +1,4 @@
-package com.omniagent.app.ui.screens
+package com.omniagent.app.ui.features.dashboard
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*

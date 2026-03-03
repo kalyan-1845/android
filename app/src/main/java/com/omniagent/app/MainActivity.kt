@@ -11,8 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.omniagent.app.ui.features.dashboard.DashboardScreen
-import com.omniagent.app.ui.features.splash.SplashScreen
 import com.omniagent.app.ui.features.admin.AdminDashboardScreen
+import com.omniagent.app.ui.features.splash.SplashScreen
+import com.omniagent.app.core.model.UserRole
 import com.omniagent.app.core.theme.OmniAgentTheme
 import com.omniagent.app.viewmodel.OmniAgentViewModel
 import com.omniagent.app.viewmodel.OmniAgentViewModelFactory
@@ -52,7 +53,7 @@ class MainActivity : ComponentActivity() {
                 val reasoningSteps by viewModel.reasoningSteps.collectAsStateWithLifecycle()
                 val logs by viewModel.recentLogs.collectAsStateWithLifecycle(initialValue = emptyList())
 
-                if (uiState.currentRole == com.omniagent.app.core.model.UserRole.ADMIN) {
+                if (uiState.currentRole == UserRole.ADMIN) {
                     AdminDashboardScreen(
                         logs = logs,
                         onClearLogs = { viewModel.clearAllLogs() },
