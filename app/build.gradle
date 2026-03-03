@@ -3,7 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'com.chaquo.python'
     id 'kotlin-kapt'
-    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
@@ -54,6 +53,9 @@ android {
         compose true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.8'
+    }
 
     packaging {
         resources {

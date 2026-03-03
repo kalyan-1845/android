@@ -1,4 +1,4 @@
-package com.omniagent.app.ui.components
+package com.omniagent.app.ui.common
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -396,7 +396,7 @@ fun ScoreBar(
         }
         Spacer(modifier = Modifier.height(4.dp))
         LinearProgressIndicator(
-            progress = (score / maxScore).coerceIn(0f, 1f),
+            progress = { score / maxScore },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(4.dp)
@@ -497,7 +497,7 @@ fun DemoPresentationBar(
             text = "DEMO PRESENTATION FLOW",
             style = MaterialTheme.typography.labelSmall,
             color = OmniColors.Accent,
-            modifier = Modifier.padding(horizontal = 16.dp, bottom = 8.dp)
+            modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp)
         )
         LazyRow(
             modifier = Modifier.fillMaxWidth(),

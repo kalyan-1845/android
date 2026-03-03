@@ -28,6 +28,7 @@ import com.omniagent.app.ui.common.*
 import com.omniagent.app.ui.features.growth.SkillGrowthScreen
 import com.omniagent.app.ui.features.export.PdfReportExporter
 import com.omniagent.app.ui.theme.OmniColors
+import com.omniagent.app.security.CryptoManager
 import com.omniagent.app.viewmodel.DashboardTab
 import com.omniagent.app.viewmodel.OmniAgentUiState
 import java.text.SimpleDateFormat

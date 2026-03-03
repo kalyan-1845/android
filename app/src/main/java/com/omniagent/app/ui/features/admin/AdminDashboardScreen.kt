@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.omniagent.app.core.model.AnalysisLog
@@ -38,7 +39,7 @@ fun AdminDashboardScreen(
         return
     }
 
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Analytics", "Audit Logs", "System Diagnostics")
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
