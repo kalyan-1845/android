@@ -28,32 +28,48 @@ class CodingEngine:
         Accepts code string, returns comprehensive JSON report.
         """
         self._log("Starting code analysis")
-        report = {
-            "engine": "Coding Analysis Engine",
+        
+        intermediate = {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "status": "success",
-            "input_length": len(code_input),
-            "analysis": {}
+            "language_detected": "Unknown"
         }
 
         try:
             # Try AST parsing (Python code)
             tree = ast.parse(code_input)
-            report["language_detected"] = "Python"
-            report["analysis"] = self._analyze_ast(tree, code_input)
+            intermediate["language_detected"] = "Python"
+            intermediate["analysis"] = self._analyze_ast(tree, code_input)
             self._log("AST analysis completed successfully")
         except SyntaxError as e:
             # Not valid Python — do pattern-based analysis
-            report["language_detected"] = "Unknown/Generic"
-            report["analysis"] = self._analyze_generic(code_input)
-            report["ast_error"] = str(e)
+            intermediate["language_detected"] = "Unknown/Generic"
+            intermediate["analysis"] = self._analyze_generic(code_input)
+            intermediate["ast_error"] = str(e)
             self._log("AST failed, using pattern-based analysis")
 
-        report["quality_score"] = self._compute_quality_score(report["analysis"])
-        report["recommendations"] = self._generate_recommendations(report["analysis"])
-        report["log"] = self.analysis_log
+        quality_score = self._compute_quality_score(intermediate["analysis"])
+        recommendations = self._generate_recommendations(intermediate["analysis"])
 
-        return json.dumps(report, indent=2)
+        # Standardized Output Fields
+        final_report = {
+            "module_name": "Coding Analysis Engine",
+            "confidence_score": 1.0,
+            "reasoning": [
+                "Detected language: {}".format(intermediate["language_detected"]),
+                "Parsing strategy: {}".format("AST-Deep" if "ast_error" not in intermediate else "Regex-Pattern"),
+                "Metrics summary: {} lines analyzed".format(intermediate["analysis"]["metrics"]["total_lines"])
+            ],
+            "structured_analysis": {
+                "metrics": intermediate["analysis"]["metrics"],
+                "quality_score": quality_score,
+                "issues": intermediate["analysis"].get("issues", []),
+                "recommendations": recommendations
+            },
+            "risk_score": float(100 - quality_score),
+            "timestamp": intermediate["timestamp"]
+        }
+
+        return json.dumps(final_report, indent=2)
 
     def _analyze_ast(self, tree, source_code):
         """Deep analysis using Python AST."""
