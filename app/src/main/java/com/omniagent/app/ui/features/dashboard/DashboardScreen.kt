@@ -326,10 +326,10 @@ private fun OutputTab(
                                 classifiedModule = classificationResult.module ?: "none",
                                 confidence = classificationResult.confidence,
                                 confidenceLevel = classificationResult.confidenceLevel,
-                                resultJson = engineResult?.rawJson ?: "",
-                                reasoningJson = Gson().toJson(classificationResult.reasoning)
+                                resultJson = CryptoManager.encrypt(Gson().toJson(engineResult)),
+                                reasoningJson = CryptoManager.encrypt(Gson().toJson(classificationResult.reasoning))
                             )
-                            PdfReportExporter.exportReport(context, log, engineResult?.rawJson ?: "No result data")
+                            PdfReportExporter.exportReport(context, log, Gson().toJson(engineResult) ?: "No result data")
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -357,57 +357,98 @@ private fun OutputTab(
  */
 @Composable
 private fun EngineResultContent(engineResult: EngineResult) {
-                        Text(
-                            text = formatKey(key),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = OmniColors.TextTertiary,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                        value.filterIsInstance<String>().forEach { item ->
-                            Row(modifier = Modifier.padding(start = 8.dp, top = 2.dp)) {
-                                Text("•", color = OmniColors.Primary, fontSize = 12.sp)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = item,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = OmniColors.TextSecondary
-                                )
-                            }
-                        }
-                    }
-                    is Map<*, *> -> {
-                        Text(
-                            text = formatKey(key),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = OmniColors.Accent,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                        )
-                        @Suppress("UNCHECKED_CAST")
-                        (value as Map<String, Any>).forEach { (k, v) ->
-                            ResultRow(
-                                label = formatKey(k),
-                                value = v.toString(),
-                                indent = true
-                            )
-                        }
-                    }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Module & Confidence
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = engineResult.module_name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = OmniColors.Primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = engineResult.timestamp,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OmniColors.TextTertiary
+                )
+            }
+            MetricDisplay(
+                label = "Risk",
+                value = "${engineResult.risk_score.toInt()}%",
+                color = scoreColor(engineResult.risk_score.toFloat())
+            )
+        }
+
+        Divider(modifier = Modifier.padding(vertical = 12.dp), color = OmniColors.Border)
+
+        // Reasoning Chain (Engine Level)
+        Text(
+            text = "Engine Reasoning",
+            style = MaterialTheme.typography.labelSmall,
+            color = OmniColors.TextTertiary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        engineResult.reasoning.forEach { step ->
+            Row(modifier = Modifier.padding(bottom = 6.dp)) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = OmniColors.Success,
+                    modifier = Modifier.size(14.dp).padding(top = 2.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = step,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = OmniColors.TextSecondary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Structured Analysis
+        Text(
+            text = "Structured Analysis",
+            style = MaterialTheme.typography.labelSmall,
+            color = OmniColors.TextTertiary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        engineResult.structured_analysis.forEach { (key, value) ->
+            AnalysisEntry(label = formatKey(key), value = value)
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+    }
+}
+
+@Composable
+private fun AnalysisEntry(label: String, value: Any?) {
+    when (value) {
+        is String -> ResultRow(label = label, value = value)
+        is Number -> ResultRow(label = label, value = value.toString())
+        is List<*> -> {
+            Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                Text(label, style = MaterialTheme.typography.bodySmall, color = OmniColors.TextTertiary)
+                value.forEach { item ->
+                    Text("• $item", style = MaterialTheme.typography.bodySmall, color = OmniColors.TextSecondary, modifier = Modifier.padding(start = 12.dp, top = 2.dp))
                 }
             }
         }
-    } else {
-        // Fallback: display raw JSON in monospace
-        Text(
-            text = engineResult.rawJson,
-            style = MaterialTheme.typography.labelSmall,
-            color = OmniColors.TextSecondary,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(OmniColors.SurfaceElevated, RoundedCornerShape(8.dp))
-                .padding(12.dp)
-                .horizontalScroll(rememberScrollState())
-        )
+        is Map<*, *> -> {
+            Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                Text(label, style = MaterialTheme.typography.labelSmall, color = OmniColors.Accent)
+                value.forEach { (k, v) ->
+                    ResultRow(label = formatKey(k.toString()), value = v.toString(), indent = true)
+                }
+            }
+        }
+        else -> ResultRow(label = label, value = value?.toString() ?: "N/A")
     }
 }
 
