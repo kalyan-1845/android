@@ -4,20 +4,22 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.omniagent.app.data.db.OmniAgentDatabase
-import com.omniagent.app.data.model.*
-import com.omniagent.app.data.repository.OmniAgentRepository
+import com.omniagent.app.core.model.*
+import com.omniagent.app.domain.repository.AnalysisRepository
 import com.omniagent.app.security.AccessControl
 import com.omniagent.app.security.CryptoManager
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import androidx.lifecycle.ViewModelProvider
 
 /**
  * Main ViewModel — manages all UI state and orchestrates the analysis pipeline.
+ * Refactored for DI: accepts repository via constructor.
  */
-class OmniAgentViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val database = OmniAgentDatabase.getDatabase(application)
-    private val repository = OmniAgentRepository(database.analysisLogDao())
+class OmniAgentViewModel(
+    private val repository: AnalysisRepository,
+    application: Application
+) : AndroidViewModel(application) {
 
     // Auto-lock inactivity timer (5 minutes)
     private val INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
@@ -160,6 +162,22 @@ class OmniAgentViewModel(application: Application) : AndroidViewModel(applicatio
                 _uiState.update { it.copy(error = "Session auto-locked due to inactivity.") }
             }
         }
+    }
+}
+
+/**
+ * Factory to inject dependencies into the ViewModel.
+ */
+class OmniAgentViewModelFactory(
+    private val repository: AnalysisRepository,
+    private val application: Application
+) : ViewModelProvider.Factory {
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(OmniAgentViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return OmniAgentViewModel(repository, application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 

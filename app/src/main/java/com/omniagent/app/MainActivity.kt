@@ -10,9 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.omniagent.app.ui.screens.DashboardScreen
-import com.omniagent.app.ui.theme.OmniAgentTheme
+import com.omniagent.app.ui.features.dashboard.DashboardScreen
+import com.omniagent.app.core.theme.OmniAgentTheme
 import com.omniagent.app.viewmodel.OmniAgentViewModel
+import com.omniagent.app.viewmodel.OmniAgentViewModelFactory
 
 /**
  * MainActivity — Entry point for the OmniAgent control platform.
@@ -26,7 +27,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             OmniAgentTheme {
-                val viewModel: OmniAgentViewModel = viewModel()
+                // Get DI container from Application
+                val appContainer = (application as OmniAgentApplication).container
+                
+                // Inject repository into ViewModel via factory
+                val viewModel: OmniAgentViewModel = viewModel(
+                    factory = OmniAgentViewModelFactory(
+                        repository = appContainer.analysisRepository,
+                        application = application
+                    )
+                )
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val classificationResult by viewModel.classificationResult.collectAsStateWithLifecycle()
                 val engineResult by viewModel.engineResult.collectAsStateWithLifecycle()
