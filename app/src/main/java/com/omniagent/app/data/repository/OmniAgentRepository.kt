@@ -1,5 +1,6 @@
 package com.omniagent.app.data.repository
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.omniagent.app.data.local.AnalysisLogDao
@@ -11,6 +12,7 @@ import com.omniagent.app.security.FileSandbox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.util.*
 
 /**
  * Repository — bridges Kotlin UI with Python AI Kernel and Domain Engines.
@@ -48,15 +50,21 @@ class OmniAgentRepository(
         userRole: String
     ): AnalysisPipelineResult = withContext(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
+        Log.d("OmniAgent", "Pipeline started for input: $userInput")
         val sanitizedInput = FileSandbox.sanitizeInput(userInput)
 
         // Step 1: Classify
+        Log.d("OmniAgent", "Step 1: Classifying input...")
         val classification = classifyInput(sanitizedInput)
+        Log.d("OmniAgent", "Classification result: ${classification.module} (${classification.confidence})")
 
         // Step 2: Route to engine (fallback to general if unknown)
+        Log.d("OmniAgent", "Step 2: Routing to engine...")
         val engineResult = runEngine(classification.module ?: "general", sanitizedInput)
+        Log.d("OmniAgent", "Engine result received from: ${engineResult.module_name}")
 
         // Step 3: Store encrypted log
+        Log.d("OmniAgent", "Step 3: Storing log...")
         val log = AnalysisLog(
             userInput = sanitizedInput,
             classifiedModule = classification.module ?: "none",
@@ -69,6 +77,7 @@ class OmniAgentRepository(
         analysisLogDao.insertLog(log)
 
         val totalTime = System.currentTimeMillis() - startTime
+        Log.d("OmniAgent", "Pipeline finished in ${totalTime}ms")
 
         AnalysisPipelineResult(
             classification = classification,

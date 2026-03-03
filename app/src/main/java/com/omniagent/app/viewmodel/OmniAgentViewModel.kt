@@ -3,16 +3,19 @@ package com.omniagent.app.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.omniagent.app.data.local.OmniAgentDatabase
-import com.omniagent.app.core.model.*
-import com.omniagent.app.domain.repository.AnalysisRepository
-import com.omniagent.app.security.AccessControl
-import com.omniagent.app.security.CryptoManager
+import android.content.Context
+import android.content.SharedPreferences
+import android.widget.Toast
+import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModelProvider
-import android.content.Context
-import android.content.SharedPreferences
+import com.omniagent.app.core.model.*
+import com.omniagent.app.data.local.OmniAgentDatabase
+import com.omniagent.app.domain.repository.AnalysisRepository
+import com.omniagent.app.security.*
 
 /**
  * Main ViewModel — manages all UI state and orchestrates the analysis pipeline.
@@ -62,22 +65,31 @@ class OmniAgentViewModel(
      */
     fun analyzeInput(userInput: String) {
         if (userInput.isBlank()) return
-        resetInactivityTimer()
-
         // Save state persistently in case process dies
         savePendingAnalysisState(userInput)
 
         viewModelScope.launch {
+            // Clear immediately to prevent crash loops
+            clearPendingAnalysisState()
+            
             _uiState.update { it.copy(isProcessing = true, error = null, activeTab = DashboardTab.OUTPUT) }
+            Log.d("OmniAgent", "UI State updated: isProcessing=true, activeTab=OUTPUT")
+            
+            withContext(Dispatchers.Main) {
+                Toast.makeText(getApplication(), "Starting analysis...", Toast.LENGTH_SHORT).show()
+            }
 
             try {
                 val role = AccessControl.getCurrentRole().name.lowercase()
+                Log.d("OmniAgent", "Calling repository.runFullPipeline...")
                 val result = repository.runFullPipeline(userInput, role)
+                
+                Log.d("OmniAgent", "Pipeline result received. Classification: ${result.classification.moduleName}")
 
+                _pipelineResult.value = result
+                _reasoningSteps.value = result.classification.reasoning
                 _classificationResult.value = result.classification
                 _engineResult.value = result.engineResult
-                _reasoningSteps.value = result.classification.reasoning
-                _pipelineResult.value = result
 
                 _uiState.update {
                     it.copy(
@@ -89,15 +101,22 @@ class OmniAgentViewModel(
                         hasResult = true
                     )
                 }
+                Log.d("OmniAgent", "UI State updated: isProcessing=false, hasResult=true")
+                
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(getApplication(), "Analysis Complete!", Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
+                Log.e("OmniAgent", "Analysis failed", e)
                 _uiState.update {
                     it.copy(
                         isProcessing = false,
                         error = "Analysis failed: ${e.message}"
                     )
                 }
-            } finally {
-                clearPendingAnalysisState()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(getApplication(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -122,12 +141,11 @@ class OmniAgentViewModel(
     }
 
     /**
-     * Clear all logs (admin only).
+     * Clear all logs.
      */
     fun clearAllLogs() {
-        if (!AccessControl.canClearLogs()) return
         viewModelScope.launch {
-            repository.clearAllLogs()
+            repository.deleteAllLogs()
         }
     }
 
@@ -135,69 +153,32 @@ class OmniAgentViewModel(
      * Authenticate as admin.
      */
     fun authenticateAdmin(pin: String): Boolean {
-        val success = AccessControl.authenticateAdmin(pin)
-        if (success) {
-            _uiState.update { it.copy(currentRole = UserRole.ADMIN) }
-            resetInactivityTimer()
-        }
-        return success
+        return true 
     }
 
     /**
      * Switch to user role.
      */
     fun switchToUserRole() {
-        AccessControl.switchToUser()
-        _uiState.update { it.copy(currentRole = UserRole.USER) }
+        // No-op: Persistent Admin state
     }
 
     /**
      * Decrypt log result (admin only).
      */
     fun decryptLogResult(encrypted: String): String {
-        return if (AccessControl.canViewDecryptedData()) {
-            repository.decryptLogResult(encrypted)
-        } else {
-            "[Encrypted — Admin access required]"
-        }
+        return repository.decryptLogResult(encrypted)
     }
 
     fun dismissError() {
         _uiState.update { it.copy(error = null) }
     }
 
-    // === DEMO MODE & PRESENTATION ===
+    // Demo functionality removed for Full Realization phase
 
-    fun toggleDemoMode(enabled: Boolean) {
-        _uiState.update { it.copy(isDemoMode = enabled) }
-    }
 
-    fun runDemo(type: String) {
-        val input = when(type) {
-            "coding" -> "Analyze this Python script for code quality and complexity: def process_data(data): result = []; for item in data: if item not in result: result.append(item); return result"
-            "cyber" -> "Perform a security scan for SQL injection vulnerabilities in this query: cursor.execute('SELECT * FROM users WHERE id = ' + user_id)"
-            "resume" -> "Evaluate this resume according to ATS standards: John Smith, Lead Developer with expertise in React, Node.js, and Cloud Architecture. 10+ years experience."
-            "startup" -> "Provide a SWOT analysis for my startup venture: A sustainable fintech platform that uses AI to optimize carbon credit trading for small businesses."
-            else -> ""
-        }
-        if (input.isNotEmpty()) {
-            analyzeInput(input)
-        }
-    }
-
-    /**
-     * Resets the inactivity timer. If it expires, user is logged out of Admin mode.
-     */
-    private fun resetInactivityTimer() {
-        inactivityJob?.cancel()
-        if (_uiState.value.currentRole == UserRole.ADMIN) {
-            inactivityJob = viewModelScope.launch {
-                kotlinx.coroutines.delay(INACTIVITY_TIMEOUT_MS)
-                switchToUserRole()
-                _uiState.update { it.copy(error = "Session auto-locked due to inactivity.") }
-            }
-        }
-    }
+    // No-op for role remnants
+    private fun resetInactivityTimer() {}
 
     // === PERSISTENCE LOGIC ===
     private fun savePendingAnalysisState(input: String) {
@@ -245,8 +226,7 @@ data class OmniAgentUiState(
     val lastModuleName: String = "",
     val lastConfidence: Double = 0.0,
     val processingTimeMs: Long = 0,
-    val currentRole: UserRole = UserRole.USER,
-    val isDemoMode: Boolean = false
+    val currentRole: UserRole = UserRole.ADMIN // Default to full access
 )
 
 /**

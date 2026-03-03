@@ -12,6 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.omniagent.app.core.model.AnalysisLog
 import com.omniagent.app.security.AccessControl
+import androidx.compose.material3.ExperimentalMaterial3Api
+import kotlin.OptIn
 
 /**
  * Admin Dashboard Screen
@@ -110,11 +112,12 @@ fun AdminAnalyticsTab(logs: List<AnalysisLog>) {
                 Text(module, fontWeight = FontWeight.SemiBold)
                 Text("$count executions")
             }
-            HorizontalDivider()
+            Divider()
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminAuditLogsTab(
     logs: List<AnalysisLog>,

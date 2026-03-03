@@ -53,34 +53,21 @@ class MainActivity : ComponentActivity() {
                     val reasoningSteps by viewModel.reasoningSteps.collectAsStateWithLifecycle()
                     val logs by viewModel.recentLogs.collectAsStateWithLifecycle(initialValue = emptyList())
 
-                    if (uiState.currentRole == UserRole.ADMIN) {
-                        AdminDashboardScreen(
-                            logs = logs,
-                            onClearLogs = { viewModel.clearAllLogs() },
-                            onDecryptLog = { viewModel.decryptLogResult(it) },
-                            onExitAdmin = { viewModel.switchToUserRole() }
-                        )
-                    } else {
-                        DashboardScreen(
-                            uiState = uiState,
-                            classificationResult = classificationResult,
-                            engineResult = engineResult,
-                            reasoningSteps = reasoningSteps,
-                            logs = logs,
-                            onAnalyze = { viewModel.analyzeInput(it) },
-                            onSwitchTab = { viewModel.switchTab(it) },
-                            onClearResults = { viewModel.clearResults() },
-                            onClearLogs = { viewModel.clearAllLogs() },
-                            onAuthenticateAdmin = { viewModel.authenticateAdmin(it) },
-                            onSwitchToUser = { viewModel.switchToUserRole() },
-                            onDecryptLog = { viewModel.decryptLogResult(it) },
-                            onToggleDemo = { viewModel.toggleDemoMode(it) },
-                            onRunDemo = { viewModel.runDemo(it) },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .systemBarsPadding()
-                        )
-                    }
+                    DashboardScreen(
+                        uiState = uiState,
+                        classificationResult = classificationResult,
+                        engineResult = engineResult,
+                        reasoningSteps = reasoningSteps,
+                        logs = logs,
+                        onAnalyze = { viewModel.analyzeInput(it) },
+                        onSwitchTab = { viewModel.switchTab(it) },
+                        onClearResults = { viewModel.clearResults() },
+                        onClearLogs = { viewModel.clearAllLogs() },
+                        onDecryptLog = { viewModel.decryptLogResult(it) },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .systemBarsPadding()
+                    )
                 }
             }
         }

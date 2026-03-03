@@ -49,15 +49,12 @@ fun DashboardScreen(
     onSwitchTab: (DashboardTab) -> Unit,
     onClearResults: () -> Unit,
     onClearLogs: () -> Unit,
-    onAuthenticateAdmin: (String) -> Boolean,
-    onSwitchToUser: () -> Unit,
     onDecryptLog: (String) -> String,
-    onToggleDemo: (Boolean) -> Unit,
-    onRunDemo: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var inputText by remember { mutableStateOf("") }
-    var selectedTab by remember { mutableStateOf(0) }
+    // Single page layout — no more tabs needed
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = modifier
@@ -126,43 +123,20 @@ fun DashboardScreen(
             }
         }
 
-        // === TAB CONTENT ===
+        // === SINGLE PAGE CONTENT ===
         Box(modifier = Modifier.weight(1f)) {
-            when (selectedTab) {
-                0 -> OutputTab(
-                    classificationResult = classificationResult,
-                    engineResult = engineResult,
-                    uiState = uiState,
-                    onClearResults = onClearResults,
-                    onDecryptLog = onDecryptLog
-                )
-                1 -> ReasoningTab(
-                    reasoningSteps = reasoningSteps,
-                    classificationResult = classificationResult
-                )
-                2 -> SkillGrowthScreen(logs = logs)
-                3 -> LogsTab(
-                    logs = logs,
-                    onClearLogs = onClearLogs,
-                    onDecryptLog = onDecryptLog,
-                    isAdmin = uiState.currentRole == UserRole.ADMIN
-                )
-                4 -> SettingsTab(
-                    uiState = uiState,
-                    onAuthenticateAdmin = onAuthenticateAdmin,
-                    onSwitchToUser = onSwitchToUser,
-                    onToggleDemo = onToggleDemo,
-                    onRunDemo = onRunDemo
-                )
-            }
+            OutputTab(
+                classificationResult = classificationResult,
+                engineResult = engineResult,
+                uiState = uiState,
+                reasoningSteps = reasoningSteps,
+                logs = logs,
+                onClearResults = onClearResults,
+                onDecryptLog = onDecryptLog,
+                onAnalyze = onAnalyze,
+                onUpdateInput = { inputText = it }
+            )
         }
-
-        // === BOTTOM TAB BAR ===
-        Divider(color = OmniColors.Border, thickness = 0.5.dp)
-        DashboardTabBar(
-            selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it }
-        )
     }
 }
 
@@ -248,34 +222,122 @@ private fun OutputTab(
     classificationResult: ClassificationResult?,
     engineResult: EngineResult?,
     uiState: OmniAgentUiState,
+    reasoningSteps: List<String>,
+    logs: List<AnalysisLog>,
     onDecryptLog: (String) -> String,
-    onClearResults: () -> Unit
+    onClearResults: () -> Unit,
+    onAnalyze: (String) -> Unit,
+    onUpdateInput: (String) -> Unit
 ) {
     val context = LocalContext.current
-    if (!uiState.hasResult || classificationResult == null) {
-        // Empty state
+    
+    if (uiState.isProcessing) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    Icons.Default.Terminal,
-                    contentDescription = null,
-                    tint = OmniColors.TextTertiary,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                CircularProgressIndicator(color = OmniColors.Primary)
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Ready for input",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "AI Kernel analyzing input...",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = OmniColors.TextSecondary
                 )
                 Text(
-                    text = "Enter a command to analyze",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "Performing offline TF-IDF routing",
+                    style = MaterialTheme.typography.labelSmall,
                     color = OmniColors.TextTertiary
                 )
+            }
+        }
+        return
+    }
+
+    if (!uiState.hasResult || classificationResult == null) {
+        // === SINGLE PAGE POWER GRID ===
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Text(
+                    text = "CONTROL CENTER",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OmniColors.Accent,
+                    letterSpacing = 2.sp,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Welcome, OmniAgent",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = OmniColors.TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    // WIDGET 1: BUSINESS / STARTUP
+                    ModuleActionCard(
+                        title = "BUSINESS",
+                        description = "Feasibility & SWOT",
+                        icon = Icons.Default.BusinessCenter,
+                        color = OmniColors.ModuleStartup,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onUpdateInput("Analyze startup: ") }
+                    )
+                    // WIDGET 2: CODING
+                    ModuleActionCard(
+                        title = "CODING",
+                        description = "Logic & Bug Analysis",
+                        icon = Icons.Default.Code,
+                        color = OmniColors.ModuleCoding,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onUpdateInput("Analyze code: ") }
+                    )
+                }
+            }
+
+            item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    // WIDGET 3: CYBERSEC
+                    ModuleActionCard(
+                        title = "CYBERSEC",
+                        description = "Vulnerability Scan",
+                        icon = Icons.Default.Security,
+                        color = OmniColors.ModuleCyber,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onUpdateInput("Security scan: ") }
+                    )
+                    // WIDGET 4: RESUME
+                    ModuleActionCard(
+                        title = "RESUME",
+                        description = "ATS & Career Scout",
+                        icon = Icons.Default.Description,
+                        color = OmniColors.ModuleResume,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onUpdateInput("Score resume: ") }
+                    )
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                DashboardCard(
+                    title = "System Status",
+                    icon = Icons.Default.Dns,
+                    iconColor = OmniColors.Primary
+                ) {
+                    Text(
+                        "All AI Engines: ONLINE\nOffline Mode: ACTIVE\nSecurity Layer: AES-256",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OmniColors.TextTertiary,
+                        lineHeight = 20.sp
+                    )
+                }
             }
         }
         return
@@ -347,6 +409,44 @@ private fun OutputTab(
                     iconColor = OmniColors.Secondary
                 ) {
                     EngineResultContent(result)
+                }
+            }
+        }
+
+        // Kernel Reasoning
+        item {
+            AnimatedVisibility(visible = reasoningSteps.isNotEmpty()) {
+                DashboardCard(
+                    title = "Kernel Reasoning",
+                    icon = Icons.Default.TipsAndUpdates,
+                    iconColor = OmniColors.Accent
+                ) {
+                    reasoningSteps.forEach { step ->
+                        Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                            Icon(Icons.Default.Adjust, contentDescription = null, tint = OmniColors.Accent, modifier = Modifier.size(14.dp).padding(top = 2.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(step, style = MaterialTheme.typography.bodySmall, color = OmniColors.TextSecondary)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Recent History
+        item {
+            if (logs.isNotEmpty()) {
+                DashboardCard(
+                    title = "Recent History",
+                    icon = Icons.Default.History,
+                    iconColor = OmniColors.TextTertiary
+                ) {
+                    logs.take(5).forEach { log ->
+                        Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                            Text(log.userInput, style = MaterialTheme.typography.bodySmall, color = OmniColors.TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("${log.classifiedModule.uppercase()} • ${log.timestamp}", style = MaterialTheme.typography.labelSmall, color = OmniColors.TextTertiary)
+                            Divider(modifier = Modifier.padding(top = 8.dp), color = OmniColors.Border.copy(alpha = 0.5f))
+                        }
+                    }
                 }
             }
         }
@@ -429,27 +529,40 @@ private fun EngineResultContent(engineResult: EngineResult) {
 }
 
 @Composable
-private fun AnalysisEntry(label: String, value: Any?) {
+private fun AnalysisEntry(label: String, value: Any?, depth: Int = 0) {
+    if (depth > 5) return // Safety depth
+    
     when (value) {
-        is String -> ResultRow(label = label, value = value)
-        is Number -> ResultRow(label = label, value = value.toString())
+        is String -> ResultRow(label = label, value = value, indent = depth > 0)
+        is Number -> ResultRow(label = label, value = value.toString(), indent = depth > 0)
         is List<*> -> {
-            Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                Text(label, style = MaterialTheme.typography.bodySmall, color = OmniColors.TextTertiary)
+            Column(modifier = Modifier.padding(vertical = 2.dp)) {
+                Text(text = label, style = MaterialTheme.typography.labelSmall, color = OmniColors.TextTertiary, modifier = Modifier.padding(start = if (depth > 0) (depth * 8).dp else 0.dp))
                 value.forEach { item ->
-                    Text("• $item", style = MaterialTheme.typography.bodySmall, color = OmniColors.TextSecondary, modifier = Modifier.padding(start = 12.dp, top = 2.dp))
+                    if (item is Map<*, *> || item is List<*>) {
+                        AnalysisEntry(label = "—", value = item, depth = depth + 1)
+                    } else {
+                        Text(
+                            text = "• ${item.toString()}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = OmniColors.TextSecondary,
+                            modifier = Modifier.padding(start = ((depth + 1) * 12).dp, top = 2.dp)
+                        )
+                    }
                 }
             }
         }
         is Map<*, *> -> {
-            Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                Text(label, style = MaterialTheme.typography.labelSmall, color = OmniColors.Accent)
+            Column(modifier = Modifier.padding(vertical = 2.dp)) {
+                if (label != "—") {
+                    Text(text = label, style = MaterialTheme.typography.labelSmall, color = OmniColors.Accent, modifier = Modifier.padding(start = if (depth > 0) (depth * 8).dp else 0.dp))
+                }
                 value.forEach { (k, v) ->
-                    ResultRow(label = formatKey(k.toString()), value = v.toString(), indent = true)
+                    AnalysisEntry(label = formatKey(k.toString()), value = v, depth = depth + 1)
                 }
             }
         }
-        else -> ResultRow(label = label, value = value?.toString() ?: "N/A")
+        else -> ResultRow(label = label, value = value?.toString() ?: "N/A", indent = depth > 0)
     }
 }
 

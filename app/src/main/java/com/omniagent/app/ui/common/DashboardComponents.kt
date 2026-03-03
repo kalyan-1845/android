@@ -35,6 +35,65 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 
 /**
+ * Module Action Card — Large clickable widgets for the home screen grid.
+ */
+@Composable
+fun ModuleActionCard(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    color: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier
+            .height(130.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() }
+            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
+        color = OmniColors.Surface,
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape) // More professional circular icon background
+                    .background(color.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium, // Better typography
+                    color = OmniColors.TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OmniColors.TextTertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+/**
  * Command Input Panel — The primary user input component.
  * Designed to look like a terminal command line.
  */
@@ -294,7 +353,7 @@ fun DashboardCard(
             headerAction?.invoke()
         }
 
-        HorizontalDivider(color = OmniColors.Border, thickness = 0.5.dp)
+        Divider(color = OmniColors.Border, thickness = 0.5.dp)
 
         // Content
         Column(
