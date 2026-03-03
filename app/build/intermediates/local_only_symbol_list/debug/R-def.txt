@@ -1,0 +1,18 @@
+R_DEF: Internal format may change without notice
+local
+color omni_accent
+color omni_bg_dark
+color omni_danger
+color omni_primary
+color omni_secondary
+color omni_surface
+color omni_text
+color omni_text_dim
+color omni_warning
+drawable ic_launcher_background
+drawable ic_launcher_foreground
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_name
+style Theme.OmniAgent
+xml data_extraction_rules
