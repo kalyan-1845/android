@@ -1,4 +1,4 @@
-package com.omniagent.app.data.model
+package com.omniagent.app.core.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

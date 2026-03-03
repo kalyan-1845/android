@@ -42,6 +42,12 @@ object OmniColors {
     val TextSecondary = Color(0xFF8B949E)
     val TextTertiary = Color(0xFF6E7681)
 
+    // Semantic Aliases
+    val Success = Secondary
+    val Info = Primary
+    val Error = Danger
+    val Hint = TextTertiary
+
     // Borders
     val Border = Color(0xFF30363D)
     val BorderFocused = Color(0xFF58A6FF)

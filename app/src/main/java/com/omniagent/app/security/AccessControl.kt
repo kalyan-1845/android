@@ -2,7 +2,7 @@ package com.omniagent.app.security
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.omniagent.app.data.model.UserRole
+import com.omniagent.app.core.model.UserRole
 
 /**
  * Role-Based Access Control (RBAC) Manager.

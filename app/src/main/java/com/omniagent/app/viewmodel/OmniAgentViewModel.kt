@@ -3,7 +3,7 @@ package com.omniagent.app.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.omniagent.app.data.db.OmniAgentDatabase
+import com.omniagent.app.data.local.OmniAgentDatabase
 import com.omniagent.app.core.model.*
 import com.omniagent.app.domain.repository.AnalysisRepository
 import com.omniagent.app.security.AccessControl
