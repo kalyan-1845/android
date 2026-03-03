@@ -51,6 +51,8 @@ fun DashboardScreen(
     onAuthenticateAdmin: (String) -> Boolean,
     onSwitchToUser: () -> Unit,
     onDecryptLog: (String) -> String,
+    onToggleDemo: (Boolean) -> Unit,
+    onRunDemo: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var inputText by remember { mutableStateOf("") }
@@ -147,7 +149,9 @@ fun DashboardScreen(
                 4 -> SettingsTab(
                     uiState = uiState,
                     onAuthenticateAdmin = onAuthenticateAdmin,
-                    onSwitchToUser = onSwitchToUser
+                    onSwitchToUser = onSwitchToUser,
+                    onToggleDemo = onToggleDemo,
+                    onRunDemo = onRunDemo
                 )
             }
         }
@@ -805,15 +809,25 @@ private fun LogEntryCard(
 private fun SettingsTab(
     uiState: OmniAgentUiState,
     onAuthenticateAdmin: (String) -> Boolean,
-    onSwitchToUser: () -> Unit
+    onSwitchToUser: () -> Unit,
+    onToggleDemo: (Boolean) -> Unit,
+    onRunDemo: (String) -> Unit
 ) {
     var adminPin by remember { mutableStateOf("") }
     var authMessage by remember { mutableStateOf("") }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp)
+        contentPadding = PaddingValues(bottom = 16.dp)
     ) {
+        // Presentation Header
+        item {
+            DemoPresentationBar(
+                onDemoClick = onRunDemo,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
         item {
             DashboardCard(
                 title = "Access Control",
@@ -914,6 +928,27 @@ private fun SettingsTab(
                 ResultRow(label = "AI Kernel", value = "TF-IDF + Cosine Similarity")
                 ResultRow(label = "Modules", value = "4 (Coding, Cyber, Resume, Startup)")
                 ResultRow(label = "File Sandbox", value = "/uploads/ only")
+                
+                Divider(color = OmniColors.Border, modifier = Modifier.padding(vertical = 12.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Demo Presentation Mode", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                        Text("Enable preloaded examples for judging", style = MaterialTheme.typography.labelSmall, color = OmniColors.TextTertiary)
+                    }
+                    Switch(
+                        checked = uiState.isDemoMode,
+                        onCheckedChange = onToggleDemo,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = OmniColors.Primary,
+                            checkedTrackColor = OmniColors.Primary.copy(alpha = 0.5f)
+                        )
+                    )
+                }
             }
         }
 

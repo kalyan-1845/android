@@ -73,6 +73,8 @@ class MainActivity : ComponentActivity() {
                         onAuthenticateAdmin = { viewModel.authenticateAdmin(it) },
                         onSwitchToUser = { viewModel.switchToUserRole() },
                         onDecryptLog = { viewModel.decryptLogResult(it) },
+                        onToggleDemo = { viewModel.toggleDemoMode(it) },
+                        onRunDemo = { viewModel.runDemo(it) },
                         modifier = Modifier
                             .fillMaxSize()
                             .systemBarsPadding()
