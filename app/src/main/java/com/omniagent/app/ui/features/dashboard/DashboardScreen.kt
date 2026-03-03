@@ -357,37 +357,6 @@ private fun OutputTab(
  */
 @Composable
 private fun EngineResultContent(engineResult: EngineResult) {
-    val gson = remember { Gson() }
-
-    val resultMap: Map<String, Any>? = remember(engineResult.rawJson) {
-        try {
-            gson.fromJson(
-                engineResult.rawJson,
-                object : TypeToken<Map<String, Any>>() {}.type
-            )
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    if (resultMap != null) {
-        // Display key fields in a structured way
-        resultMap.forEach { (key, value) ->
-            if (key !in listOf("log", "timestamp", "status", "engine")) {
-                when (value) {
-                    is String -> {
-                        ResultRow(label = formatKey(key), value = value)
-                    }
-                    is Number -> {
-                        ResultRow(
-                            label = formatKey(key),
-                            value = if (value.toDouble() == value.toLong().toDouble())
-                                value.toLong().toString() else value.toString(),
-                            valueColor = if (key.contains("score", ignoreCase = true))
-                                scoreColor(value.toFloat()) else OmniColors.TextPrimary
-                        )
-                    }
-                    is List<*> -> {
                         Text(
                             text = formatKey(key),
                             style = MaterialTheme.typography.labelSmall,
@@ -610,7 +579,7 @@ private fun ReasoningTab(
                     icon = Icons.Default.Info,
                     iconColor = OmniColors.TextTertiary
                 ) {
-                    ResultRow(label = "Input Features", value = "${result.inputFeatures}")
+                    ResultRow(label = "Input Features", value = "${result.input_features}")
                     ResultRow(label = "Timestamp", value = result.timestamp)
                     ResultRow(label = "Status", value = result.status)
                 }
@@ -629,8 +598,29 @@ private fun LogsTab(
     onDecryptLog: (String) -> String,
     isAdmin: Boolean
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredLogs = remember(logs, searchQuery) {
+        if (searchQuery.isBlank()) logs
+        else logs.filter { it.userInput.contains(searchQuery, ignoreCase = true) || it.classifiedModule.contains(searchQuery, ignoreCase = true) }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        if (logs.isEmpty()) {
+        // Search Bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            placeholder = { Text("Search logs...", style = MaterialTheme.typography.bodySmall) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(20.dp)) },
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = OmniColors.Border,
+                focusedBorderColor = OmniColors.Primary
+            )
+        )
+
+        if (filteredLogs.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
