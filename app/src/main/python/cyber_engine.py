@@ -106,37 +106,33 @@ class CyberSecurityEngine:
 
         # XSS scan
         xss_findings = self._scan_patterns(input_text, self.XSS_PATTERNS, "Cross-Site Scripting (XSS)")
-        findings.extend(xss_findings)
-        self._log("XSS scan: {} findings".format(len(xss_findings)))
-
+        
         # General vulnerability scan
         gen_findings = self._scan_patterns(input_text, self.GENERAL_PATTERNS, "General Vulnerability")
-        findings.extend(gen_findings)
-        self._log("General scan: {} findings".format(len(gen_findings)))
-
-        # Compute risk score
+        
+        findings = sqli_findings + xss_findings + gen_findings
         risk_score = self._compute_risk_score(findings)
 
-        # Build report
+        # Standardized Output Fields
         report = {
-            "engine": "Cybersecurity Detection Engine",
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "status": "success",
-            "input_length": len(input_text),
-            "total_findings": len(findings),
-            "risk_score": risk_score,
-            "risk_level": self._risk_level(risk_score),
-            "findings": findings,
-            "summary": {
-                "sqli_count": len(sqli_findings),
-                "xss_count": len(xss_findings),
-                "general_count": len(gen_findings),
-                "critical": sum(1 for f in findings if f["severity"] == "critical"),
-                "high": sum(1 for f in findings if f["severity"] == "high"),
-                "medium": sum(1 for f in findings if f["severity"] == "medium"),
+            "module_name": "Cybersecurity Detection Engine",
+            "confidence_score": 1.0 if findings else 0.8,
+            "reasoning": [
+                "Scanned {} characters against 45+ vulnerability patterns".format(len(input_text)),
+                "Detected {} total security anomalies".format(len(findings)),
+                "Severity breakdown: {} critical, {} high issues".format(
+                    sum(1 for f in findings if f["severity"] == "critical"),
+                    sum(1 for f in findings if f["severity"] == "high")
+                )
+            ],
+            "structured_analysis": {
+                "risk_level": self._risk_level(risk_score),
+                "total_findings": len(findings),
+                "findings": findings,
+                "recommendations": self._generate_recommendations(findings)
             },
-            "recommendations": self._generate_recommendations(findings),
-            "log": self.scan_log
+            "risk_score": float(risk_score),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
         return json.dumps(report, indent=2)

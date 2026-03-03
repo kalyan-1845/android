@@ -12,10 +12,10 @@ data class ClassificationResult(
     val moduleName: String = "",
     val confidence: Double = 0.0,
     val confidenceLevel: String = "",
-    val allScores: Map<String, Double> = emptyMap(),
+    val all_scores: Map<String, Double> = emptyMap(),
     val ranking: List<ModuleScore> = emptyList(),
     val reasoning: List<String> = emptyList(),
-    val inputFeatures: Int = 0,
+    val input_features: Int = 0,
     val timestamp: String = ""
 )
 
@@ -28,11 +28,12 @@ data class ModuleScore(
  * Represents the result from any domain engine.
  */
 data class EngineResult(
-    val engine: String = "",
-    val timestamp: String = "",
-    val status: String = "",
-    val rawJson: String = "",
-    val summary: Map<String, Any> = emptyMap()
+    val module_name: String = "",
+    val confidence_score: Double = 0.0,
+    val reasoning: List<String> = emptyList(),
+    val structured_analysis: Map<String, Any> = emptyMap(),
+    val risk_score: Double = 0.0,
+    val timestamp: String = ""
 )
 
 /**
