@@ -1,10 +1,11 @@
 package com.omniagent.app.data.repository
 
-import com.chaquo.python.Python
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.omniagent.app.data.db.AnalysisLogDao
-import com.omniagent.app.data.model.*
+import com.omniagent.app.data.local.AnalysisLogDao
+import com.omniagent.app.core.model.*
+import com.omniagent.app.domain.repository.AnalysisRepository
+import com.omniagent.app.kernel.PythonKernelManager
 import com.omniagent.app.security.CryptoManager
 import com.omniagent.app.security.FileSandbox
 import kotlinx.coroutines.Dispatchers
@@ -13,14 +14,14 @@ import kotlinx.coroutines.withContext
 
 /**
  * Repository — bridges Kotlin UI with Python AI Kernel and Domain Engines.
- * All Python calls are routed through Chaquopy.
+ * All Python calls are routed through Chaquopy via PythonKernelManager.
  * Results are encrypted before database storage.
  */
 class OmniAgentRepository(
-    private val analysisLogDao: AnalysisLogDao
-) {
+    private val analysisLogDao: AnalysisLogDao,
+    private val kernelManager: PythonKernelManager
+) : AnalysisRepository {
     private val gson = Gson()
-    private val python by lazy { Python.getInstance() }
 
     // === KERNEL OPERATIONS ===
 
@@ -28,11 +29,9 @@ class OmniAgentRepository(
      * Classify user input through the AI Kernel.
      * Returns which module should handle the task.
      */
-    suspend fun classifyInput(userInput: String): ClassificationResult = withContext(Dispatchers.IO) {
+    override suspend fun classifyInput(userInput: String): ClassificationResult = withContext(Dispatchers.IO) {
         val sanitizedInput = FileSandbox.sanitizeInput(userInput)
-
-        val classifier = python.getModule("intent_classifier")
-        val resultJson = classifier.callAttr("classify_input", sanitizedInput).toString()
+        val resultJson = kernelManager.classify(sanitizedInput)
 
         parseClassificationResult(resultJson)
     }
@@ -44,9 +43,9 @@ class OmniAgentRepository(
      * 3. Get structured result
      * 4. Store encrypted log
      */
-    suspend fun runFullPipeline(
+    override suspend fun runFullPipeline(
         userInput: String,
-        userRole: String = "user"
+        userRole: String
     ): AnalysisPipelineResult = withContext(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
         val sanitizedInput = FileSandbox.sanitizeInput(userInput)
@@ -88,25 +87,7 @@ class OmniAgentRepository(
      * Route to the correct engine based on classification.
      */
     private suspend fun runEngine(moduleName: String, input: String): EngineResult = withContext(Dispatchers.IO) {
-        val resultJson = when (moduleName) {
-            "coding" -> {
-                val engine = python.getModule("coding_engine")
-                engine.callAttr("analyze_code", input).toString()
-            }
-            "cybersecurity" -> {
-                val engine = python.getModule("cyber_engine")
-                engine.callAttr("analyze_security", input).toString()
-            }
-            "resume" -> {
-                val engine = python.getModule("resume_engine")
-                engine.callAttr("analyze_resume", input).toString()
-            }
-            "startup" -> {
-                val engine = python.getModule("startup_engine")
-                engine.callAttr("analyze_startup", input).toString()
-            }
-            else -> "{\"error\": \"Unknown module: $moduleName\"}"
-        }
+        val resultJson = kernelManager.runEngine(moduleName, input)
 
         EngineResult(
             engine = moduleName,
@@ -118,31 +99,30 @@ class OmniAgentRepository(
 
     // === LOG OPERATIONS ===
 
-    fun getAllLogs(): Flow<List<AnalysisLog>> = analysisLogDao.getAllLogs()
+    override fun getAllLogs(): Flow<List<AnalysisLog>> = analysisLogDao.getAllLogs()
 
-    fun getRecentLogs(limit: Int = 20): Flow<List<AnalysisLog>> = analysisLogDao.getRecentLogs(limit)
+    override fun getRecentLogs(limit: Int): Flow<List<AnalysisLog>> = analysisLogDao.getRecentLogs(limit)
 
-    fun getLogsByModule(module: String): Flow<List<AnalysisLog>> = analysisLogDao.getLogsByModule(module)
+    override fun getLogsByModule(module: String): Flow<List<AnalysisLog>> = analysisLogDao.getLogsByModule(module)
 
-    fun searchLogs(query: String): Flow<List<AnalysisLog>> = analysisLogDao.searchLogs(query)
+    override fun searchLogs(query: String): Flow<List<AnalysisLog>> = analysisLogDao.searchLogs(query)
 
-    suspend fun clearAllLogs() = analysisLogDao.clearAllLogs()
+    override suspend fun clearAllLogs() = analysisLogDao.clearAllLogs()
 
-    suspend fun getLogCount(): Int = analysisLogDao.getLogCount()
+    override suspend fun getLogCount(): Int = analysisLogDao.getLogCount()
 
     /**
      * Decrypt a log's result JSON (admin only).
      */
-    fun decryptLogResult(encryptedJson: String): String {
+    override fun decryptLogResult(encryptedJson: String): String {
         return CryptoManager.decrypt(encryptedJson)
     }
 
     /**
      * Get reasoning log from Python kernel.
      */
-    suspend fun getKernelReasoningLog(): String = withContext(Dispatchers.IO) {
-        val classifier = python.getModule("intent_classifier")
-        classifier.callAttr("get_reasoning_log").toString()
+    override suspend fun getKernelReasoningLog(): String = withContext(Dispatchers.IO) {
+        kernelManager.getReasoningLog()
     }
 
     // === PARSING ===
