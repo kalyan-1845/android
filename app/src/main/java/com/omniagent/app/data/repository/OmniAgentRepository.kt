@@ -53,12 +53,8 @@ class OmniAgentRepository(
         // Step 1: Classify
         val classification = classifyInput(sanitizedInput)
 
-        // Step 2: Route to engine
-        val engineResult = if (classification.module != null) {
-            runEngine(classification.module, sanitizedInput)
-        } else {
-            null
-        }
+        // Step 2: Route to engine (fallback to general if unknown)
+        val engineResult = runEngine(classification.module ?: "general", sanitizedInput)
 
         // Step 3: Store encrypted log
         val log = AnalysisLog(

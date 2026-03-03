@@ -174,10 +174,10 @@ class OmniAgentViewModel(
 
     fun runDemo(type: String) {
         val input = when(type) {
-            "coding" -> "Check this Python code for SQL injection vulnerabilities: cursor.execute('SELECT * FROM users WHERE name = ' + user_input)"
-            "cyber" -> "Analyze these logs for suspicious patterns: 192.168.1.1 accessed /admin/config 50 times in 2 seconds"
-            "resume" -> "Review this resume snippet: Senior Java Developer with 10 years experience in banking systems and microservices."
-            "startup" -> "Evaluate my startup idea: An AI-powered personal chef app that suggests recipes based on fridge contents and nutrition goals."
+            "coding" -> "Analyze this Python script for code quality and complexity: def process_data(data): result = []; for item in data: if item not in result: result.append(item); return result"
+            "cyber" -> "Perform a security scan for SQL injection vulnerabilities in this query: cursor.execute('SELECT * FROM users WHERE id = ' + user_id)"
+            "resume" -> "Evaluate this resume according to ATS standards: John Smith, Lead Developer with expertise in React, Node.js, and Cloud Architecture. 10+ years experience."
+            "startup" -> "Provide a SWOT analysis for my startup venture: A sustainable fintech platform that uses AI to optimize carbon credit trading for small businesses."
             else -> ""
         }
         if (input.isNotEmpty()) {
