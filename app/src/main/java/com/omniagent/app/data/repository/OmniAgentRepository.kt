@@ -66,7 +66,7 @@ class OmniAgentRepository(
             classifiedModule = classification.module ?: "none",
             confidence = classification.confidence,
             confidenceLevel = classification.confidenceLevel,
-            resultJson = CryptoManager.encrypt(engineResult?.rawJson ?: "{}"),
+            resultJson = CryptoManager.encrypt(gson.toJson(engineResult)),
             reasoningJson = CryptoManager.encrypt(gson.toJson(classification.reasoning)),
             userRole = userRole
         )
@@ -88,13 +88,35 @@ class OmniAgentRepository(
      */
     private suspend fun runEngine(moduleName: String, input: String): EngineResult = withContext(Dispatchers.IO) {
         val resultJson = kernelManager.runEngine(moduleName, input)
+        
+        try {
+            val type = object : TypeToken<Map<String, Any>>() {}.type
+            val map: Map<String, Any> = gson.fromJson(resultJson, type)
 
-        EngineResult(
-            engine = moduleName,
-            timestamp = System.currentTimeMillis().toString(),
-            status = "success",
-            rawJson = resultJson
-        )
+            if (map.containsKey("error")) {
+                return@withContext EngineResult(
+                    module_name = "Error",
+                    reasoning = listOf(map["details"] as? String ?: "Engine execution failed"),
+                    timestamp = System.currentTimeMillis().toString()
+                )
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            EngineResult(
+                module_name = map["module_name"] as? String ?: "",
+                confidence_score = (map["confidence_score"] as? Number)?.toDouble() ?: 0.0,
+                reasoning = (map["reasoning"] as? List<String>) ?: emptyList(),
+                structured_analysis = (map["structured_analysis"] as? Map<String, Any>) ?: emptyMap(),
+                risk_score = (map["risk_score"] as? Number)?.toDouble() ?: 0.0,
+                timestamp = map["timestamp"] as? String ?: ""
+            )
+        } catch (e: Exception) {
+            EngineResult(
+                module_name = "Parsing Error",
+                reasoning = listOf("Failed to parse engine output: ${e.message}"),
+                timestamp = System.currentTimeMillis().toString()
+            )
+        }
     }
 
     // === LOG OPERATIONS ===
@@ -133,6 +155,10 @@ class OmniAgentRepository(
                 json, object : TypeToken<Map<String, Any>>() {}.type
             )
 
+            if (map["status"] == "error") {
+                return ClassificationResult(status = "error", moduleName = map["message"] as? String ?: "Unknown Error")
+            }
+
             @Suppress("UNCHECKED_CAST")
             ClassificationResult(
                 status = map["status"] as? String ?: "",
@@ -140,7 +166,7 @@ class OmniAgentRepository(
                 moduleName = map["module_name"] as? String ?: "",
                 confidence = (map["confidence"] as? Number)?.toDouble() ?: 0.0,
                 confidenceLevel = map["confidence_level"] as? String ?: "",
-                allScores = (map["all_scores"] as? Map<String, Number>)
+                all_scores = (map["all_scores"] as? Map<String, Number>)
                     ?.mapValues { it.value.toDouble() } ?: emptyMap(),
                 ranking = (map["ranking"] as? List<Map<String, Any>>)?.map { entry ->
                     ModuleScore(
@@ -149,7 +175,7 @@ class OmniAgentRepository(
                     )
                 } ?: emptyList(),
                 reasoning = (map["reasoning"] as? List<String>) ?: emptyList(),
-                inputFeatures = (map["input_features"] as? Number)?.toInt() ?: 0,
+                input_features = (map["input_features"] as? Number)?.toInt() ?: 0,
                 timestamp = map["timestamp"] as? String ?: ""
             )
         } catch (e: Exception) {
