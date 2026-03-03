@@ -1,5 +1,8 @@
 package com.omniagent.app.data.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
  * Represents the classification result from the AI Kernel.
  */
@@ -56,4 +59,11 @@ enum class UserRole(val displayName: String) {
             }
         }
     }
+}
+
+/**
+ * Simple enum for processing state.
+ */
+enum class ProcessingState {
+    IDLE, PROCESSING, SUCCESS, ERROR
 }
