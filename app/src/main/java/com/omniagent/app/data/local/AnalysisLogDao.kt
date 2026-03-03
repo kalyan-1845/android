@@ -1,7 +1,7 @@
-package com.omniagent.app.data.db
+package com.omniagent.app.data.local
 
 import androidx.room.*
-import com.omniagent.app.data.model.AnalysisLog
+import com.omniagent.app.core.model.AnalysisLog
 import kotlinx.coroutines.flow.Flow
 
 @Dao

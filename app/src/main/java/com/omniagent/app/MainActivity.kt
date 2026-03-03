@@ -28,13 +28,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             OmniAgentTheme {
                 // Get DI container from Application
-                val appContainer = (application as OmniAgentApplication).container
+                val appContainer = (applicationContext as OmniAgentApplication).container
                 
                 // Inject repository into ViewModel via factory
                 val viewModel: OmniAgentViewModel = viewModel(
                     factory = OmniAgentViewModelFactory(
                         repository = appContainer.analysisRepository,
-                        application = application
+                        application = applicationContext as OmniAgentApplication
                     )
                 )
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()

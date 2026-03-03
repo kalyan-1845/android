@@ -1,10 +1,10 @@
-package com.omniagent.app.data.db
+package com.omniagent.app.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.omniagent.app.data.model.AnalysisLog
+import com.omniagent.app.core.model.AnalysisLog
 
 @Database(
     entities = [AnalysisLog::class],
