@@ -123,18 +123,25 @@ class CodingEngine:
                 func_length = end_line - node.lineno + 1
                 function_lengths.append(func_length)
 
-                analysis["structure"]["functions"].append({
+                func_info = {
                     "name": node.name,
                     "line": node.lineno,
                     "args": args,
                     "arg_count": len(args),
                     "length_lines": func_length,
                     "is_async": isinstance(node, ast.AsyncFunctionDef),
-                    "has_docstring": (
-                        isinstance(node.body[0], ast.Expr) and
-                        isinstance(node.body[0].value, (ast.Str, ast.Constant))
-                    ) if node.body else False
-                })
+                    "has_docstring": False
+                }
+
+                # Check for docstring and extract it
+                if (node.body and
+                    isinstance(node.body[0], ast.Expr) and 
+                    isinstance(node.body[0].value, ast.Constant) and 
+                    isinstance(node.body[0].value.value, str)):
+                    func_info["has_docstring"] = True
+                    func_info["docstring_length"] = len(node.body[0].value.value)
+
+                analysis["structure"]["functions"].append(func_info)
                 analysis["metrics"]["function_count"] += 1
 
                 # Check for long functions

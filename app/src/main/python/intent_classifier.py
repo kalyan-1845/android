@@ -99,25 +99,27 @@ def cosine_similarity(vec_a, vec_b):
 MODULE_DEFINITIONS = {
     "coding": {
         "name": "Coding Analysis Engine",
-        "description": "code programming python java javascript function class variable bug debug syntax error compile algorithm data structure loop array list dictionary object method api library framework refactor optimize complexity review analyze parse ast abstract syntax tree",
+        "description": "code programming python java javascript cpp csharp html css function class variable bug debug syntax error compile algorithm data structure loop array list dictionary object method api library framework refactor optimize complexity review analyze parse ast abstract syntax tree if else while for return import include print console log",
         "triggers": [
             "analyze code", "review code", "debug", "find bugs", "code quality",
             "syntax analysis", "refactor", "optimize code", "code review",
             "programming", "algorithm", "function analysis", "parse code",
             "code complexity", "clean code", "code smell", "static analysis",
-            "variable tracking", "method extraction", "class design"
+            "variable tracking", "method extraction", "class design",
+            "python script", "java code", "javascript snippet"
         ]
     },
     "cybersecurity": {
         "name": "Cybersecurity Detection Engine",
-        "description": "security vulnerability exploit attack sql injection xss cross site scripting malware threat risk assessment penetration testing firewall network scan port authentication authorization encryption hash password brute force phishing payload input validation sanitize",
+        "description": "security vulnerability exploit attack sql injection xss cross site scripting malware threat risk assessment penetration testing firewall network scan port authentication authorization encryption hash password brute force phishing payload input validation sanitize select insert update delete from where script alert onerror eval",
         "triggers": [
             "scan for vulnerabilities", "security check", "detect injection",
             "find xss", "sql injection", "penetration test", "security audit",
             "threat detection", "malware check", "vulnerability scan",
             "security analysis", "exploit detection", "input validation",
             "authentication check", "encryption analysis", "password security",
-            "network security", "firewall check", "phishing detection"
+            "network security", "firewall check", "phishing detection",
+            "check for exploits"
         ]
     },
     "resume": {
@@ -134,14 +136,14 @@ MODULE_DEFINITIONS = {
     },
     "startup": {
         "name": "Startup Feasibility Engine",
-        "description": "startup business idea feasibility market analysis swot strength weakness opportunity threat competitor revenue model investor pitch funding venture capital product market fit scalability growth strategy business plan financial projection customer segment value proposition lean canvas",
+        "description": "startup business idea feasibility market analysis swot strength weakness opportunity threat competitor revenue model investor pitch funding venture capital product market fit scalability growth strategy business plan financial projection customer segment value proposition lean canvas fintech healthtech edtech saas ai machine learning platform startup ecommerce",
         "triggers": [
             "startup idea", "business plan", "market analysis", "swot analysis",
             "feasibility study", "business model", "competitor analysis",
             "revenue projection", "funding strategy", "product market fit",
             "growth strategy", "value proposition", "business feasibility",
             "startup assessment", "market opportunity", "business viability",
-            "investor readiness", "lean canvas"
+            "investor readiness", "lean canvas", "pitch deck", "venture"
         ]
     }
 }
@@ -218,11 +220,11 @@ class AIKernel:
         best_score = scores[best_module]
 
         # Determine confidence level
-        if best_score >= 0.4:
+        if best_score >= 0.3:
             confidence_level = "HIGH"
-        elif best_score >= 0.2:
+        elif best_score >= 0.15:
             confidence_level = "MEDIUM"
-        elif best_score >= 0.1:
+        elif best_score >= 0.05:
             confidence_level = "LOW"
         else:
             confidence_level = "UNCERTAIN"
@@ -234,10 +236,10 @@ class AIKernel:
             "Step 2: Computed TF-IDF vectors for input",
             "Step 3: Calculated cosine similarity against {} modules".format(len(scores)),
             "Step 4: Ranked results — top match: {} ({:.4f})".format(best_module, best_score),
-            "Step 5: Confidence assessment: {} (threshold: 0.1 minimum)".format(confidence_level)
+            "Step 5: Confidence assessment: {} (threshold: 0.05 minimum)".format(confidence_level)
         ]
 
-        if best_score < 0.1:
+        if best_score < 0.05:
             reasoning_steps.append("Step 6: Score below threshold — no confident classification")
             best_module_name = None
         else:
