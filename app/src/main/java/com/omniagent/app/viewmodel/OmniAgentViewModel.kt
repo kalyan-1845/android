@@ -145,7 +145,7 @@ class OmniAgentViewModel(
      */
     fun clearAllLogs() {
         viewModelScope.launch {
-            repository.deleteAllLogs()
+            repository.clearAllLogs()
         }
     }
 
@@ -226,7 +226,8 @@ data class OmniAgentUiState(
     val lastModuleName: String = "",
     val lastConfidence: Double = 0.0,
     val processingTimeMs: Long = 0,
-    val currentRole: UserRole = UserRole.USER // Default to limited access
+    val currentRole: UserRole = UserRole.USER, // Default to limited access
+    val isDemoMode: Boolean = false
 )
 
 /**
