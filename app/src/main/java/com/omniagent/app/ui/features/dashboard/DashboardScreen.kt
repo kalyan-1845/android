@@ -132,6 +132,7 @@ fun DashboardScreen(
                 reasoningSteps = reasoningSteps,
                 logs = logs,
                 onClearResults = onClearResults,
+                onClearLogs = onClearLogs,
                 onDecryptLog = onDecryptLog,
                 onAnalyze = onAnalyze,
                 onUpdateInput = { inputText = it }
@@ -226,6 +227,7 @@ private fun OutputTab(
     logs: List<AnalysisLog>,
     onDecryptLog: (String) -> String,
     onClearResults: () -> Unit,
+    onClearLogs: () -> Unit,
     onAnalyze: (String) -> Unit,
     onUpdateInput: (String) -> Unit
 ) {
@@ -255,6 +257,25 @@ private fun OutputTab(
     }
 
     if (!uiState.hasResult || classificationResult == null) {
+        if (uiState.currentRole == UserRole.ADMIN) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Text(
+                    text = "ADMIN AUDIT LOGS - 4 WIDGETS HISTORY",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OmniColors.Warning,
+                    letterSpacing = 2.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+                LogsTab(
+                    logs = logs,
+                    onClearLogs = onClearLogs,
+                    onDecryptLog = onDecryptLog,
+                    isAdmin = true
+                )
+            }
+            return
+        }
+
         // === SINGLE PAGE POWER GRID ===
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -287,7 +308,11 @@ private fun OutputTab(
                         icon = Icons.Default.BusinessCenter,
                         color = OmniColors.ModuleStartup,
                         modifier = Modifier.weight(1f),
-                        onClick = { onUpdateInput("Analyze startup: ") }
+                        onClick = { 
+                            val cmd = "Analyze startup: AI driven code reviewer platform"
+                            onUpdateInput(cmd)
+                            onAnalyze(cmd)
+                        }
                     )
                     // WIDGET 2: CODING
                     ModuleActionCard(
@@ -296,7 +321,11 @@ private fun OutputTab(
                         icon = Icons.Default.Code,
                         color = OmniColors.ModuleCoding,
                         modifier = Modifier.weight(1f),
-                        onClick = { onUpdateInput("Analyze code: ") }
+                        onClick = { 
+                            val cmd = "Analyze code: def calculate_sum(a, b): return a - b"
+                            onUpdateInput(cmd)
+                            onAnalyze(cmd)
+                        }
                     )
                 }
             }
@@ -310,7 +339,11 @@ private fun OutputTab(
                         icon = Icons.Default.Security,
                         color = OmniColors.ModuleCyber,
                         modifier = Modifier.weight(1f),
-                        onClick = { onUpdateInput("Security scan: ") }
+                        onClick = { 
+                            val cmd = "Security scan: SELECT * FROM users WHERE id = ' + userId"
+                            onUpdateInput(cmd)
+                            onAnalyze(cmd)
+                        }
                     )
                     // WIDGET 4: RESUME
                     ModuleActionCard(
@@ -319,7 +352,11 @@ private fun OutputTab(
                         icon = Icons.Default.Description,
                         color = OmniColors.ModuleResume,
                         modifier = Modifier.weight(1f),
-                        onClick = { onUpdateInput("Score resume: ") }
+                        onClick = { 
+                            val cmd = "Score resume: 5 years experience in Python and Android"
+                            onUpdateInput(cmd)
+                            onAnalyze(cmd)
+                        }
                     )
                 }
             }
