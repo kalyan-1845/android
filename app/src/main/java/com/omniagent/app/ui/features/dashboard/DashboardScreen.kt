@@ -240,7 +240,12 @@ private fun OutputTab(
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator(color = OmniColors.Primary)
+                Text(
+                    text = "PROCESSING...",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = OmniColors.Primary,
+                    fontWeight = FontWeight.Bold
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "AI Kernel analyzing input...",

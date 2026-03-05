@@ -203,10 +203,12 @@ fun CommandInputPanel(
                     )
             ) {
                 if (isProcessing) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
+                    Text(
+                        text = "...",
                         color = OmniColors.Warning,
-                        strokeWidth = 2.dp
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
                 } else {
                     Icon(

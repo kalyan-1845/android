@@ -191,7 +191,7 @@ fun AdminDiagnosticsTab() {
             enabled = !isValidating
         ) {
             if (isValidating) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                Text(text = "...", color = Color.White, fontWeight = FontWeight.Bold)
             } else {
                 Text("Run Comprehensive Offline Validation")
             }
