@@ -1,0 +1,81 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:extractDebugPythonBuildPackages
+> Task :app:generateDebugPythonRequirements
+
+> Task :app:mergeDebugPythonSources
+Warning: Failed to compile to .pyc format: buildPython version 3.14.2 is incompatible. See https://chaquo.com/chaquopy/doc/current/android.html#android-bytecode.
+
+> Task :app:generateDebugPythonProxies
+> Task :app:generateDebugResValues
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:mergeDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+
+> Task :app:processDebugMainManifest
+C:\Users\prsnl\OneDrive\Desktop\android\app\src\main\AndroidManifest.xml:7:5-8:31 Warning:
+	uses-permission#android.permission.INTERNET was tagged at AndroidManifest.xml:7 to remove other declarations but no other declaration present
+
+> Task :app:processDebugManifest
+> Task :app:javaPreCompileDebug
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:generateDebugPythonMiscAssets
+> Task :app:generateDebugPythonRequirementsAssets
+> Task :app:generateDebugPythonSourceAssets
+> Task :app:generateDebugPythonBuildAssets
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :app:checkDebugDuplicateClasses
+> Task :app:generateDebugPythonJniLibs
+> Task :app:processDebugManifestForPackage
+> Task :app:mergeExtDexDebug
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJniLibFolders
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:mergeDebugNativeLibs
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libchaquopy_java.so, libcrypto_chaquopy.so, libpython3.8.so, libsqlite3_chaquopy.so, libssl_chaquopy.so.
+
+> Task :app:processDebugResources
+> Task :app:kaptGenerateStubsDebugKotlin
+> Task :app:kaptDebugKotlin
+> Task :app:compileDebugKotlin
+w: file:///C:/Users/prsnl/OneDrive/Desktop/android/app/src/main/java/com/omniagent/app/ui/common/DashboardComponents.kt:484:35 'TrendingUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.TrendingUp
+w: file:///C:/Users/prsnl/OneDrive/Desktop/android/app/src/main/java/com/omniagent/app/ui/features/dashboard/DashboardScreen.kt:50:5 Parameter 'onSwitchTab' is never used
+w: file:///C:/Users/prsnl/OneDrive/Desktop/android/app/src/main/java/com/omniagent/app/ui/features/dashboard/DashboardScreen.kt:58:9 Variable 'scrollState' is never used
+w: file:///C:/Users/prsnl/OneDrive/Desktop/android/app/src/main/java/com/omniagent/app/ui/features/export/PdfReportExporter.kt:117:13 Variable 'accentPaint' is never used
+w: file:///C:/Users/prsnl/OneDrive/Desktop/android/app/src/main/java/com/omniagent/app/viewmodel/OmniAgentViewModel.kt:154:27 Parameter 'pin' is never used
+
+> Task :app:compileDebugJavaWithJavac
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:processDebugJavaRes
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 4m 21s
+47 actionable tasks: 47 executed
