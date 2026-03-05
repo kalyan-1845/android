@@ -271,7 +271,8 @@ private fun OutputTab(
                     logs = logs,
                     onClearLogs = onClearLogs,
                     onDecryptLog = onDecryptLog,
-                    isAdmin = true
+                    isAdmin = true,
+                    modifier = Modifier.weight(1f)
                 )
             }
             return
@@ -362,21 +363,6 @@ private fun OutputTab(
                 }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                DashboardCard(
-                    title = "System Status",
-                    icon = Icons.Default.Dns,
-                    iconColor = OmniColors.Primary
-                ) {
-                    Text(
-                        "All AI Engines: ONLINE\nOffline Mode: ACTIVE\nSecurity Layer: AES-256",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = OmniColors.TextTertiary,
-                        lineHeight = 20.sp
-                    )
-                }
-            }
         }
         return
     }
@@ -470,24 +456,6 @@ private fun OutputTab(
             }
         }
 
-        // Recent History
-        item {
-            if (logs.isNotEmpty()) {
-                DashboardCard(
-                    title = "Recent History",
-                    icon = Icons.Default.History,
-                    iconColor = OmniColors.TextTertiary
-                ) {
-                    logs.take(5).forEach { log ->
-                        Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                            Text(log.userInput, style = MaterialTheme.typography.bodySmall, color = OmniColors.TextPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text("${log.classifiedModule.uppercase()} • ${log.timestamp}", style = MaterialTheme.typography.labelSmall, color = OmniColors.TextTertiary)
-                            Divider(modifier = Modifier.padding(top = 8.dp), color = OmniColors.Border.copy(alpha = 0.5f))
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -789,7 +757,8 @@ private fun LogsTab(
     logs: List<AnalysisLog>,
     onClearLogs: () -> Unit,
     onDecryptLog: (String) -> String,
-    isAdmin: Boolean
+    isAdmin: Boolean,
+    modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val filteredLogs = remember(logs, searchQuery) {
@@ -797,7 +766,7 @@ private fun LogsTab(
         else logs.filter { it.userInput.contains(searchQuery, ignoreCase = true) || it.classifiedModule.contains(searchQuery, ignoreCase = true) }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize()) {
         // Search Bar
         OutlinedTextField(
             value = searchQuery,
@@ -815,7 +784,7 @@ private fun LogsTab(
 
         if (filteredLogs.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -837,6 +806,7 @@ private fun LogsTab(
         }
 
         LazyColumn(
+            modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             // Header with count and clear button
