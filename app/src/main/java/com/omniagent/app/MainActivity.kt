@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.omniagent.app.ui.features.dashboard.DashboardScreen
-import com.omniagent.app.ui.features.admin.AdminDashboardScreen
+
 import com.omniagent.app.ui.features.splash.SplashScreen
 import com.omniagent.app.core.model.UserRole
 import com.omniagent.app.ui.theme.OmniAgentTheme

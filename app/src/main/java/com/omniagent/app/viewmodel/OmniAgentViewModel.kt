@@ -77,7 +77,7 @@ class OmniAgentViewModel(
             // Clear immediately to prevent crash loops
             clearPendingAnalysisState()
             
-            _uiState.update { it.copy(isProcessing = true, error = null, activeTab = DashboardTab.OUTPUT) }
+            _uiState.update { it.copy(isProcessing = true, error = null, activeTab = DashboardTab.CHATS) }
             Log.d("OmniAgent", "UI State updated: isProcessing=true, activeTab=OUTPUT")
 
             try {
@@ -220,7 +220,7 @@ data class OmniAgentUiState(
     val isProcessing: Boolean = false,
     val hasResult: Boolean = false,
     val error: String? = null,
-    val activeTab: DashboardTab = DashboardTab.OUTPUT,
+    val activeTab: DashboardTab = DashboardTab.CHATS,
     val lastModule: String = "",
     val lastModuleName: String = "",
     val lastConfidence: Double = 0.0,
@@ -233,9 +233,8 @@ data class OmniAgentUiState(
  * Dashboard navigation tabs.
  */
 enum class DashboardTab(val title: String, val icon: String) {
-    OUTPUT("Output", "workspace"),
-    REASONING("Reasoning", "brain"),
-    GROWTH("Growth", "trending_up"),
-    LOGS("Logs", "history"),
+    CHATS("Chats", "chat"),
+    STATUS("Status", "update"),
+    COMMUNITIES("Communities", "people"),
     SETTINGS("Settings", "settings")
 }
