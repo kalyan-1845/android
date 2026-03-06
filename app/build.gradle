@@ -27,6 +27,9 @@ android {
 
         python {
             buildPython "python"
+            pyc {
+                src false  // Skip .pyc — system Python 3.14 is too new for Chaquopy compiler
+            }
             pip {
                 // No external pip packages — fully offline with pure Python
             }
